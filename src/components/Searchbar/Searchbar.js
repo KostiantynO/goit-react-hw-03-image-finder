@@ -1,19 +1,14 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { toast } from 'react-toastify';
 import { SearchForm } from 'components';
 import { Status } from 'components/App';
 import css from './Searchbar.module.css';
 
-export class Searchbar extends Component {
-  static propTypes = {
-    onSubmit: PropTypes.func,
-    status: PropTypes.string,
-  };
+export class Searchbar extends PureComponent {
+  static propTypes = { onSubmit: PropTypes.func, status: PropTypes.string };
 
-  state = {
-    query: '',
-  };
+  state = { query: '' };
 
   inputQueryChange = e => this.setState({ query: e.target.value });
 
@@ -23,8 +18,7 @@ export class Searchbar extends Component {
     const normalizedInput = this.state.query.trim().toLowerCase();
 
     if (normalizedInput === '') {
-      toast.error('Введите запрос');
-      return;
+      return toast.error('Пожалуйста, введите запрос');
     }
 
     this.props.onSubmit(normalizedInput);
@@ -48,36 +42,3 @@ export class Searchbar extends Component {
     );
   }
 }
-
-/* import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { toast } from 'react-toastify';
-import { SearchForm } from 'components';
-import css from './Searchbar.module.css';
-
-export class Searchbar extends Component {
-  static propTypes = { onSubmit: PropTypes.func };
-
-  state = { query: '' };
-
-  handleQueryChange = event => {
-    this.setState({ query: event.target.value.toLowerCase() });
-  };
-
-
-
-  render() {
-    const { query } = this.state;
-
-    return (
-      <header className={css.Searchbar}>
-        <SearchForm
-          onFormSubmit={this.handleFormSubmit}
-          onQueryChange={this.handleQueryChange}
-          inputValue={query}
-        />
-      </header>
-    );
-  }
-}
- */

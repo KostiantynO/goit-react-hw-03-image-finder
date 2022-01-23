@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { Searchbar } from 'components';
 import css from '../App.module.css';
 
@@ -11,4 +12,10 @@ export const AppRejectedView = ({ query, error, onSubmit }) => {
       </p>
     </div>
   );
+};
+
+AppRejectedView.propTypes = {
+  query: PropTypes.string.isRequired,
+  error: PropTypes.object,
+  onSubmit: PropTypes.func.isRequired,
 };
