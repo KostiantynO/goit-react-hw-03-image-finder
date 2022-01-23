@@ -1,18 +1,71 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { ImSearch } from 'react-icons/im';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
+import { FaSearch } from 'react-icons/fa';
+import { SearchForm } from 'components';
+import { Status } from 'components/App';
 import css from './Searchbar.module.css';
 
 export class Searchbar extends Component {
-  static propTypes = { onSubmit: PropTypes.func.isRequired };
+  static propTypes = {
+    onSubmit: PropTypes.func,
+    status: PropTypes.string,
+  };
+
+  state = {
+    query: '',
+  };
+
+  inputQueryChange = e => this.setState({ query: e.target.value });
+
+  formSubmit = e => {
+    e.preventDefault();
+
+    const normalizedInput = this.state.query.trim().toLowerCase();
+
+    if (normalizedInput === '') {
+      toast.error('Заполните поле поиска');
+      return;
+    }
+
+    this.props.onSubmit(normalizedInput);
+    this.setState({ query: '' });
+  };
+
+  render() {
+    const { query } = this.state;
+
+    const searchFormProps = {
+      onSubmit: this.formSubmit,
+      onChange: this.inputQueryChange,
+      disabled: this.props.status === Status.PENDING,
+      query,
+    };
+
+    return (
+      <header className={css.Searchbar}>
+        <SearchForm {...searchFormProps} />
+      </header>
+    );
+  }
+}
+
+/* import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { toast } from 'react-toastify';
+import { SearchForm } from 'components';
+import css from './Searchbar.module.css';
+
+export class Searchbar extends Component {
+  static propTypes = { onSubmit: PropTypes.func };
 
   state = { query: '' };
 
-  handleQueryChange = event =>
-    this.setState({ query: event.currentTarget.value.toLowerCase() });
+  handleQueryChange = event => {
+    this.setState({ query: event.target.value.toLowerCase() });
+  };
 
-  handleSubmit = event => {
+  handleFormSubmit = event => {
     event.preventDefault();
     const query = this.state.query.trim();
 
@@ -25,25 +78,17 @@ export class Searchbar extends Component {
   };
 
   render() {
+    const { query } = this.state;
+
     return (
       <header className={css.Searchbar}>
-        <form className={css.SearchForm} onSubmit={this.handleSubmit}>
-          <button type="submit" className={css.SearchFormButton}>
-            <ImSearch className={css.SearchIcon} />
-            <span className={css.SearchFormButtonLabel}>Search</span>
-          </button>
-
-          <input
-            name="query"
-            className={css.SearchFormInput}
-            type="text"
-            autoComplete="off"
-            autoFocus
-            onChange={this.handleQueryChange}
-            placeholder="Search images and photos"
-          />
-        </form>
+        <SearchForm
+          onFormSubmit={this.handleFormSubmit}
+          onQueryChange={this.handleQueryChange}
+          inputValue={query}
+        />
       </header>
     );
   }
 }
+ */

@@ -1,0 +1,12 @@
+.Loader {
+  display: block;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  color: '#00BFFF';
+}
+
+.Wrapper {
+  display: flex;
+  justify-content: center;
+}

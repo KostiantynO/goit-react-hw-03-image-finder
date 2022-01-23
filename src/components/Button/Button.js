@@ -2,11 +2,28 @@ import { PropTypes } from 'prop-types';
 import React from 'react';
 import css from './Button.module.css';
 
-export const Button = ({ type = 'button', onLoadMore, ...props }) => (
-  <button className={css.Button} type={type} onClick={onLoadMore} {...props} />
-);
+export const Button = ({
+  type = 'button',
+  onLoadMoreImages,
+  hasNextPage,
+  ...props
+}) => {
+  if (hasNextPage) {
+    return (
+      <button
+        className={css.Button}
+        type={type}
+        onClick={onLoadMoreImages}
+        {...props}
+      />
+    );
+  }
+
+  return null;
+};
 
 Button.propTypes = {
   type: PropTypes.string,
-  onLoadMore: PropTypes.func.isRequired,
+  hasNextPage: PropTypes.bool,
+  onLoadMoreImages: PropTypes.func.isRequired,
 };

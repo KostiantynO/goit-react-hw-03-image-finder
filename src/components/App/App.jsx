@@ -1,87 +1,125 @@
-import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import { TailSpin } from 'react-loader-spinner';
-import { Button, ImageGallery, Searchbar } from 'components';
-import 'react-toastify/dist/ReactToastify.css';
-// import { createGlobalStyle } from 'styled-components';
+import React, { PureComponent } from 'react';
+import { ImageApi } from 'apis';
 
-import './App.css';
-import { getImages } from 'services';
+import {
+  AppIdleView,
+  AppPendingView,
+  AppRejectedView,
+  AppResolvedView,
+} from 'components/App/Views';
 
-const Item = ({ id, image, description }) => {
-  return (
-    <li key={id} className="Image">
-      <img src={image} alt={description} />
-    </li>
-  );
+export const Status = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  REJECTED: 'rejected',
 };
 
-export class App extends Component {
-  state = { page: 1, query: '', images: [], showModal: false, loading: false };
+const firstPage = 1;
 
-  componentDidUpdate(_, prevState) {
+export class App extends PureComponent {
+  state = {
+    status: Status.IDLE,
+    page: 1,
+    perPage: 12,
+    query: '',
+    images: [],
+    totalHits: 0,
+    error: null,
+    showModal: {},
+  };
+
+  async componentDidUpdate(_, prevState) {
     const { query, page } = this.state;
+    const oldQuery = prevState.query;
+    const oldPage = prevState.page;
 
-    if (page > prevState.page) {
-      this.setState({ loading: true });
+    if (query !== oldQuery) {
+      this.setState({ page: 1, status: Status.PENDING });
 
-      getImages(query, page)
-        .then(res => res.json())
-        .then(({ hits }) => {
-          this.setState(({ images }) => ({
-            images: [...images, ...hits],
-            loading: false,
-          }));
+      try {
+        const { totalHits, hits } = await ImageApi.fetchImages({
+          query,
+          page: firstPage,
         });
+
+        this.setState({ totalHits, images: hits, status: Status.RESOLVED });
+      } catch (error) {
+        this.setState({ error, status: Status.REJECTED });
+      }
     }
 
-    if (query !== prevState.query) {
-      this.setState({ loading: true });
+    if (page > oldPage) {
+      this.setState({ status: Status.PENDING });
 
-      getImages(query, page)
-        .then(res => res.json())
-        .then(res => this.setState({ images: res.hits, loading: false }));
+      try {
+        const { hits } = await ImageApi.fetchImages({ query: oldQuery, page });
+
+        this.setState(({ images }) => ({
+          images: [...images, ...hits],
+          status: Status.RESOLVED,
+        }));
+      } catch (error) {
+        this.setState({ error, status: Status.REJECTED });
+      }
     }
   }
 
-  handleSearchSubmit = query => {
-    const prevQuery = this.state.query;
+  handleSubmit = query => {
+    const oldQuery = this.state.query;
 
-    if (prevQuery !== query) {
+    if (oldQuery !== query) {
       this.setState({ query });
     }
   };
 
-  // LoadMoreImages
-  onLoadMore = () => this.setState(({ page }) => ({ page: page + 1 }));
-
-  onToggleModal = e => {
-    e.preventDefault();
-
-    this.setState(({ showModal }) => ({ showModal: !showModal }));
-  };
+  loadMoreImages = () => this.setState(({ page }) => ({ page: page + 1 }));
+  showModal = showModal => this.setState({ showModal });
+  closeModal = () => this.setState({ showModal: {} });
 
   render() {
-    const { images, loading } = this.state;
-    const hasImages = images?.length > 0;
+    const {
+      status,
+      page,
+      perPage,
+      query,
+      images,
+      totalHits,
+      error,
+      showModal,
+    } = this.state;
 
-    return (
-      <div className="App">
-        <Searchbar onSubmit={this.handleSearchSubmit} />
+    const appIdleProps = { onSubmit: this.handleSubmit };
+    const appPendingProps = { page, images, status };
+    const appRejectedProps = { query, error };
+    const appResolvedProps = {
+      query,
+      page,
+      perPage,
+      images,
+      totalHits,
+      showModal,
+      onSubmit: this.handleSubmit,
+      onLoadMoreImages: this.loadMoreImages,
+      onShowModal: this.showModal,
+      onClose: this.closeModal,
+    };
 
-        {hasImages && (
-          <ImageGallery images={images} onToggleModal={this.onToggleModal} />
-        )}
+    switch (status) {
+      case Status.IDLE:
+        return <AppIdleView {...appIdleProps} />;
 
-        {hasImages && !loading && (
-          <Button type="button" onLoadMore={this.onLoadMore}>
-            Load More
-          </Button>
-        )}
+      case Status.PENDING:
+        return <AppPendingView {...appPendingProps} />;
 
-        <ToastContainer autoClose={3000} />
-      </div>
-    );
+      case Status.REJECTED:
+        return <AppRejectedView {...appRejectedProps} />;
+
+      case Status.RESOLVED:
+        return <AppResolvedView {...appResolvedProps} />;
+
+      default:
+        return <div>Error in App Status</div>;
+    }
   }
 }
