@@ -19,5 +19,5 @@ export const ImageGallery = ({ images = [{}], onShowModal }) => {
 
 ImageGallery.propTypes = {
   images: PropTypes.arrayOf(PropTypes.object.isRequired).isRequired,
-  onShowModal: PropTypes.func.isRequired,
+  onShowModal: PropTypes.func,
 };

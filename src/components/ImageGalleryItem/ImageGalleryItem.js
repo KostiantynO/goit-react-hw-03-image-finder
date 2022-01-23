@@ -25,14 +25,6 @@ export const ImageGalleryItem = ({
   );
 };
 
-/*
-       <ImageGalleryItem
-          key={image.id}
-          image={image}
-          onToggleModal={onToggleModal}
-        />
-*/
-
 ImageGalleryItem.propTypes = {
   image: PropTypes.shape({
     webformatURL: PropTypes.string.isRequired,
@@ -44,5 +36,5 @@ ImageGalleryItem.propTypes = {
     ]),
   }).isRequired,
 
-  onShowModal: PropTypes.func.isRequired,
+  onShowModal: PropTypes.func,
 };
