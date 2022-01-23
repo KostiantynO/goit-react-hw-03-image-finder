@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { toast } from 'react-toastify';
-import { FaSearch } from 'react-icons/fa';
 import { SearchForm } from 'components';
 import { Status } from 'components/App';
 import css from './Searchbar.module.css';
@@ -18,13 +17,13 @@ export class Searchbar extends Component {
 
   inputQueryChange = e => this.setState({ query: e.target.value });
 
-  formSubmit = e => {
+  handleFormSubmit = e => {
     e.preventDefault();
 
     const normalizedInput = this.state.query.trim().toLowerCase();
 
     if (normalizedInput === '') {
-      toast.error('Заполните поле поиска');
+      toast.error('Введите запрос');
       return;
     }
 
@@ -36,7 +35,7 @@ export class Searchbar extends Component {
     const { query } = this.state;
 
     const searchFormProps = {
-      onSubmit: this.formSubmit,
+      onSubmit: this.handleFormSubmit,
       onChange: this.inputQueryChange,
       disabled: this.props.status === Status.PENDING,
       query,
@@ -65,17 +64,7 @@ export class Searchbar extends Component {
     this.setState({ query: event.target.value.toLowerCase() });
   };
 
-  handleFormSubmit = event => {
-    event.preventDefault();
-    const query = this.state.query.trim();
 
-    if (query === '') {
-      return toast.error('Введите запрос.');
-    }
-
-    this.props.onSubmit(query);
-    this.setState({ query: '' });
-  };
 
   render() {
     const { query } = this.state;
