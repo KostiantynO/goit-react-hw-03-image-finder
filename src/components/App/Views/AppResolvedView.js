@@ -1,8 +1,7 @@
+import PropTypes from 'prop-types';
 import { Searchbar, ImageGallery, Button, Modal } from 'components';
 import { AiOutlineClose } from 'react-icons/ai';
 import css from '../App.module.css';
-
-import PropTypes from 'prop-types';
 
 export const AppResolvedView = ({
   query,
@@ -16,28 +15,24 @@ export const AppResolvedView = ({
   onLoadMoreImages,
   onClose,
 }) => {
-  // 1. Длина массива равна нулю
-  const imagesInArray = images?.length > 0;
-
-  // 2. Предыдущая страница больше или равна следующей.
+  const hasImagesInArray = images?.length > 0;
   const hasNextPage = totalHits > page * perPage;
-
-  // 3. Есть ли картинка для модалки в стейте
   const needToOpenModal = showModal && Object.keys(showModal).length > 0;
 
   return (
     <div className={css.App}>
       <Searchbar onSubmit={onSubmit} />
 
-      {!imagesInArray && (
+      {!hasImagesInArray && (
         <p className={css.ErrorMessage}>
           No results for <b>"{query}"</b>. Please try another query.
         </p>
       )}
 
-      {imagesInArray && (
+      {hasImagesInArray && (
         <>
           <ImageGallery images={images} onShowModal={onShowModal} />
+
           <Button hasNextPage={hasNextPage} onLoadMoreImages={onLoadMoreImages}>
             Load More
           </Button>

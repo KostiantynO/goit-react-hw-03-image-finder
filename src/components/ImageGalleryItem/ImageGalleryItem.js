@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import css from './ImageGalleryItem.module.css';
 
 export const ImageGalleryItem = ({
-  image: { webformatURL, largeImageURL, tags },
+  image: { webformatURL, largeImageURL, tags, webformatHeight, webformatWidth },
   onShowModal,
 }) => {
   const alt = tags
@@ -19,6 +19,8 @@ export const ImageGalleryItem = ({
         className={css.Image}
         src={webformatURL}
         alt={alt}
+        width={webformatWidth}
+        height={webformatHeight}
         onClick={() => onShowModal({ largeImageURL, alt })}
       />
     </li>

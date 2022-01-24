@@ -1,12 +1,12 @@
 import React, { PureComponent } from 'react';
 import { ImageApi } from 'apis';
-
 import {
   AppIdleView,
   AppPendingView,
   AppRejectedView,
   AppResolvedView,
 } from 'components/App/Views';
+import { smoothScroll } from 'utils';
 
 export const Status = {
   IDLE: 'idle',
@@ -43,7 +43,10 @@ export class App extends PureComponent {
           page: firstPage,
         });
 
-        this.setState({ totalHits, images: hits, status: Status.RESOLVED });
+        this.setState(
+          { totalHits, images: hits, status: Status.RESOLVED },
+          smoothScroll(),
+        );
       } catch (error) {
         this.setState({ error, status: Status.REJECTED });
       }
@@ -55,10 +58,13 @@ export class App extends PureComponent {
       try {
         const { hits } = await ImageApi.fetchImages({ query: oldQuery, page });
 
-        this.setState(({ images }) => ({
-          images: [...images, ...hits],
-          status: Status.RESOLVED,
-        }));
+        this.setState(
+          ({ images }) => ({
+            images: [...images, ...hits],
+            status: Status.RESOLVED,
+          }),
+          smoothScroll(),
+        );
       } catch (error) {
         this.setState({ error, status: Status.REJECTED });
       }
@@ -93,6 +99,7 @@ export class App extends PureComponent {
     const appPendingProps = { page, images, status };
     const appRejectedProps = { query, error };
     const appResolvedProps = {
+      status,
       query,
       page,
       perPage,

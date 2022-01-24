@@ -1,10 +1,10 @@
 import React, { PureComponent } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
-
+import { getRefs } from 'utils';
 import css from './Modal.module.css';
 
-const modalRoot = document.querySelector('#modal-root');
+const { modalRoot } = getRefs();
 
 export class Modal extends PureComponent {
   static propTypes = {

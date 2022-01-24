@@ -5,13 +5,15 @@ import { App } from 'components';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './index.css';
+import { getRefs } from 'utils';
+const { root } = getRefs();
 
 ReactDOM.render(
   <React.StrictMode>
     <App />
     <ToastContainer autoClose={2500} />
   </React.StrictMode>,
-  document.getElementById('root'),
+  root,
 );
 
 // If you want to start measuring performance in your app, pass a function
