@@ -28,3 +28,9 @@ export const SearchForm = ({ handleSubmit, handleQueryChange }) => {};
 ```
 
 `2022-01-23`: Done Tasks 1,2,3,4 ✅.
+
+`jsconfig.json`
+
+```json
+  "exclude": ["node_modules", "build"],
+```
