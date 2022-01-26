@@ -43,6 +43,7 @@
     "prop-types": "^15.8.1",
     "react-icons": "^4.3.1",
     "react-loader-spinner": "^5.0.10",
+    "react-loading-skeleton": "^3.0.2",
     "react-toastify": "^8.1.0",
     "styled-components": "^5.3.3"
   }

@@ -1,42 +1,41 @@
 import PropTypes from 'prop-types';
+import Skeleton from 'react-loading-skeleton';
 import css from './ImageGalleryItem.module.css';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 export const ImageGalleryItem = ({
   image: { webformatURL, largeImageURL, tags, webformatHeight, webformatWidth },
   onShowModal,
+  showSkeleton,
 }) => {
-  const alt = tags
-    ? tags.length > 0 && Array.isArray(tags)
-      ? tags.join(', ')
-      : tags.length > 0 && typeof tags === 'object'
-      ? Object.values(tags).join(', ')
-      : tags
-    : 'image';
-
   return (
     <li className={css.Item}>
-      <img
-        className={css.Image}
-        src={webformatURL}
-        alt={alt}
-        width={webformatWidth}
-        height={webformatHeight}
-        onClick={() => onShowModal({ largeImageURL, alt })}
-      />
+      {showSkeleton ? (
+        <Skeleton className={css.Skeleton} />
+      ) : (
+        <img
+          className={css.Image}
+          src={webformatURL}
+          alt={tags}
+          width={webformatWidth}
+          height={webformatHeight}
+          onClick={() => onShowModal({ largeImageURL, tags })}
+        />
+      )}
     </li>
   );
 };
 
 ImageGalleryItem.propTypes = {
   image: PropTypes.shape({
-    webformatURL: PropTypes.string.isRequired,
-    largeImageURL: PropTypes.string.isRequired,
+    webformatURL: PropTypes.string,
+    largeImageURL: PropTypes.string,
     tags: PropTypes.oneOfType([
       PropTypes.array,
       PropTypes.object,
       PropTypes.string,
     ]),
   }).isRequired,
-
+  status: PropTypes.string,
   onShowModal: PropTypes.func,
 };

@@ -3,13 +3,15 @@ import PropTypes from 'prop-types';
 import { ImageGalleryItem } from 'components';
 import css from './ImageGallery.module.css';
 
-export const ImageGallery = ({ images = [{}], onShowModal }) => {
+// key={image.id} if need to change collection.
+export const ImageGallery = ({ images = [{}], showSkeleton, onShowModal }) => {
   return (
     <ul className={css.ImageGallery}>
-      {images.map(image => (
+      {images.map((image, id) => (
         <ImageGalleryItem
-          key={image.id}
+          key={id}
           image={image}
+          showSkeleton={showSkeleton}
           onShowModal={onShowModal}
         />
       ))}

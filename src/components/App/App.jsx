@@ -1,12 +1,11 @@
-import React, { PureComponent } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Skeleton from 'react-loading-skeleton';
+import { AiOutlineClose } from 'react-icons/ai';
 import { ImageApi } from 'apis';
-import {
-  AppIdleView,
-  AppPendingView,
-  AppRejectedView,
-  AppResolvedView,
-} from 'components/App/Views';
-import { smoothScroll } from 'utils';
+import { Searchbar, ImageGallery, Loader, Button, Modal } from 'components';
+import 'react-loading-skeleton/dist/skeleton.css';
+import css from './App.module.css';
+import { toast } from 'react-toastify';
 
 export const Status = {
   IDLE: 'idle',
@@ -14,119 +13,109 @@ export const Status = {
   RESOLVED: 'resolved',
   REJECTED: 'rejected',
 };
+const { IDLE, PENDING, RESOLVED, REJECTED } = Status;
+const skeletonArray = Array(12).fill(<Skeleton />, 0);
+const perPage = 12;
 
-const firstPage = 1;
+export const App = () => {
+  const [status, setStatus] = useState(IDLE);
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [totalHits, setTotalHits] = useState(0);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState({});
+  const isFirstRender = useRef(true);
 
-export class App extends PureComponent {
-  state = {
-    status: Status.IDLE,
-    page: 1,
-    perPage: 12,
-    query: '',
-    images: [],
-    totalHits: 0,
-    error: null,
-    showModal: {},
-  };
+  useEffect(() => {
+    if (isFirstRender.current) {
+      return;
+    }
 
-  async componentDidUpdate(_, prevState) {
-    const { query, page } = this.state;
-    const oldQuery = prevState.query;
-    const oldPage = prevState.page;
-
-    if (query !== oldQuery) {
-      this.setState({ page: 1, status: Status.PENDING });
-
+    const getImagesOnSearchSubmit = async () => {
+      setStatus(PENDING);
       try {
-        const { totalHits, hits } = await ImageApi.fetchImages({
-          query,
-          page: firstPage,
-        });
+        const { hits, totalHits } = await ImageApi.fetchImages({ query, page });
 
-        this.setState(
-          { totalHits, images: hits, status: Status.RESOLVED },
-          smoothScroll(),
-        );
+        if (page > 1) {
+          setImages(images => [...images, ...hits]);
+        } else {
+          setImages(hits);
+          setTotalHits(totalHits);
+        }
+
+        setStatus(RESOLVED);
       } catch (error) {
-        this.setState({ error, status: Status.REJECTED });
+        setError(error);
+        toast.error(error.message);
+        setStatus(REJECTED);
       }
-    }
-
-    if (page > oldPage) {
-      this.setState({ status: Status.PENDING });
-
-      try {
-        const { hits } = await ImageApi.fetchImages({ query: oldQuery, page });
-
-        this.setState(
-          ({ images }) => ({
-            images: [...images, ...hits],
-            status: Status.RESOLVED,
-          }),
-          smoothScroll(),
-        );
-      } catch (error) {
-        this.setState({ error, status: Status.REJECTED });
-      }
-    }
-  }
-
-  handleSubmit = query => {
-    const oldQuery = this.state.query;
-
-    if (oldQuery !== query) {
-      this.setState({ query });
-    }
-  };
-
-  loadMoreImages = () => this.setState(({ page }) => ({ page: page + 1 }));
-  showModal = showModal => this.setState({ showModal });
-  closeModal = () => this.setState({ showModal: {} });
-
-  render() {
-    const {
-      status,
-      page,
-      perPage,
-      query,
-      images,
-      totalHits,
-      error,
-      showModal,
-    } = this.state;
-
-    const appIdleProps = { onSubmit: this.handleSubmit };
-    const appPendingProps = { page, images, status };
-    const appRejectedProps = { query, error };
-    const appResolvedProps = {
-      status,
-      query,
-      page,
-      perPage,
-      images,
-      totalHits,
-      showModal,
-      onSubmit: this.handleSubmit,
-      onLoadMoreImages: this.loadMoreImages,
-      onShowModal: this.showModal,
-      onClose: this.closeModal,
     };
 
-    switch (status) {
-      case Status.IDLE:
-        return <AppIdleView {...appIdleProps} />;
+    getImagesOnSearchSubmit();
+  }, [query, page]);
 
-      case Status.PENDING:
-        return <AppPendingView {...appPendingProps} />;
+  useEffect(() => (isFirstRender.current = false), []);
 
-      case Status.REJECTED:
-        return <AppRejectedView {...appRejectedProps} />;
-
-      case Status.RESOLVED:
-        return <AppResolvedView {...appResolvedProps} />;
-
-      default:
-        return <div>Error in App Status</div>;
+  const handleSearchSubmit = newQuery => {
+    if (query !== newQuery) {
+      setQuery(newQuery);
+      setPage(1);
     }
-  }
-}
+  };
+
+  // derived data
+  const hasImages = images?.length > 0;
+  const isPending = status === PENDING;
+  const isError =
+    (status === REJECTED || status === RESOLVED) && (error || !hasImages);
+  const arrayToRender = hasImages ? images : isPending ? skeletonArray : [];
+  const hasNextPage = totalHits > page * perPage;
+  const hideModalWhileLoading = isPending ? () => null : setShowModal;
+  const needToOpenModal = showModal && Object.keys(showModal).length > 0;
+
+  return (
+    <div className={css.App}>
+      <Searchbar onSubmit={handleSearchSubmit} status={status} />
+
+      <ImageGallery
+        showSkeleton={!hasImages}
+        images={arrayToRender}
+        onShowModal={hideModalWhileLoading}
+      />
+      {isPending && <Loader />}
+
+      {isError && (
+        <p className={css.ErrorMessage}>
+          Found 0 results for <b>{query}</b> Please try another search!
+        </p>
+      )}
+
+      {hasImages && (
+        <>
+          <Button
+            hasNextPage={hasNextPage}
+            onLoadMoreImages={() => setPage(page => page + 1)}
+          >
+            Load More
+          </Button>
+
+          {needToOpenModal && (
+            <Modal onClose={() => setShowModal({})}>
+              <button
+                type="button"
+                className={css.CloseBtn}
+                autoFocus
+                onClick={() => setShowModal({})}
+              >
+                <AiOutlineClose className={css.CloseIcon} />
+              </button>
+
+              <img src={showModal.largeImageURL} alt={showModal.tags} />
+            </Modal>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
